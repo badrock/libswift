@@ -1347,16 +1347,17 @@ void Channel::UpdateRTT(int32_t pos, tbqueue data_out, tint owd) {
     dev_avg_ = ( dev_avg_*3 + tintabs(rtt-rtt_avg_) ) >> 2;
     assert(data_out_[di].time!=TINT_NEVER);
     dprintf("%s #%" PRIu32 " rtt:%" PRIu64 " dev:%" PRIu64 "\n", tintstr(), id_, rtt_avg_, dev_avg_);
+
     // one-way delay calculations
-    // Ric: we r always re-writing the first element
-    owd_cur_bin_ = 0;//(owd_cur_bin_+1) & 3;
-    owd_current_[owd_cur_bin_] = owd;
-    if ( owd_min_bin_start_+TINT_SEC*30 < NOW ) {
-       owd_min_bin_start_ = NOW;
-       owd_min_bin_ = (owd_min_bin_+1) & 3;
-       owd_min_bins_[owd_min_bin_] = TINT_NEVER;
+    std::pair <tint,tint> delay (owd, NOW);
+    owd_current_.push_front(delay);
+
+    if ( owd_min_bin_start_+ LEDBAT_ROLLOVER < NOW ) {
+        owd_min_bin_start_ = NOW;
+        owd_min_bin_ = owd_min_bin_ == 9 ? 0 : owd_min_bin_ + 1;
+        owd_min_bins_[owd_min_bin_] = owd;
     }
-    if (owd_min_bins_[owd_min_bin_]>owd)
+    else if (owd_min_bins_[owd_min_bin_]>owd)
        owd_min_bins_[owd_min_bin_] = owd;
 
     ack_rcvd_recent_++;
@@ -1365,7 +1366,7 @@ void Channel::UpdateRTT(int32_t pos, tbqueue data_out, tint owd) {
     // early loss detection by packet reordering
     for (int re=0; re<pos-MAX_REORDERING; re++) {
        if (data_out[re]==tintbin())
-               continue;
+           continue;
        ack_not_rcvd_recent_++;
        data_out_tmo_.push_back(data_out[re].bin);
        dprintf("%s #%" PRIu32 " Rdata %s\n",tintstr(),id_,data_out.front().bin.str().c_str());
@@ -1498,6 +1499,11 @@ void Channel::TimeoutDataOut ( ) {
     // clear retransmit queue of older items
     while (!data_out_tmo_.empty() && data_out_tmo_.front().time<NOW-MAX_POSSIBLE_RTT)
         data_out_tmo_.pop_front();
+
+    // use the same value to clean the delay samples
+    while ( owd_current_.size() > 4 && owd_current_.back().second < timeout) {
+        owd_current_.pop_back();
+    }
 }
 
 
