@@ -214,6 +214,7 @@ void    Channel::AddFileUncleHashes (struct evbuffer *evb, bin_t pos) {
     //while (pos!=peak && ((NOW&3)==3 || !pos.parent().contains(data_out_cap_)) &&
     //        ack_in_.is_empty(pos.parent()) ) {
     // Ric: TODO optimise.. send based on pkt loss statistics
+    //      the above is correct but should not happen at the beginning!
     while (pos!=peak && ack_in_.is_empty(pos.parent()) ) {
         bin_t uncle = pos.sibling();
         bv.push_back(uncle);
@@ -1351,12 +1352,12 @@ void Channel::UpdateRTT(int32_t pos, tbqueue data_out, tint owd) {
     owd_cur_bin_ = 0;//(owd_cur_bin_+1) & 3;
     owd_current_[owd_cur_bin_] = owd;
     if ( owd_min_bin_start_+TINT_SEC*30 < NOW ) {
-               owd_min_bin_start_ = NOW;
-               owd_min_bin_ = (owd_min_bin_+1) & 3;
-               owd_min_bins_[owd_min_bin_] = TINT_NEVER;
+       owd_min_bin_start_ = NOW;
+       owd_min_bin_ = (owd_min_bin_+1) & 3;
+       owd_min_bins_[owd_min_bin_] = TINT_NEVER;
     }
     if (owd_min_bins_[owd_min_bin_]>owd)
-           owd_min_bins_[owd_min_bin_] = owd;
+       owd_min_bins_[owd_min_bin_] = owd;
 
     ack_rcvd_recent_++;
     data_out_size_--;
@@ -1448,7 +1449,7 @@ void    Channel::OnAck (struct evbuffer *evb) {
             di++;
         // FUTURE: delayed acks
         // rule out retransmits
-        // Ric: by ruling out retransmits we scrw up ledbat calculations
+        // Ric: by ruling out retransmits we screw up ledbat calculations
         while (ri<data_out_tmo_.size() && !ackd_pos.contains(data_out_tmo_[ri].bin) )
             ri++;
         dprintf("%s #%" PRIu32 " %cack %s owd:%" PRIi64 "\n",tintstr(),id_,
@@ -2367,7 +2368,6 @@ void Channel::Reschedule () {
             next_send_time_ = NOW;
             direct_sending_ = false;
             LibeventSendCallback(-1,EV_TIMEOUT,this);
-
         }
         else
         {
