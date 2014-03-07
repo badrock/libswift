@@ -1364,20 +1364,6 @@ void Channel::UpdateRTT(int32_t pos, tbqueue data_out, tint owd) {
     ack_rcvd_recent_++;
     data_out_size_--;
 
-    // early loss detection by packet reordering
-    for (int re=0; re<pos-MAX_REORDERING; re++) {
-       if (data_out[re]==tintbin())
-           continue;
-       ack_not_rcvd_recent_++;
-       data_out_size_--;
-       data_out_tmo_.push_back(data_out[re].bin);
-       dprintf("%s #%" PRIu32 " Rdata %s\n",tintstr(),id_,data_out.front().bin.str().c_str());
-       data_out_cap_ = bin_t::ALL;
-       data_out[re] = tintbin();
-    }
-
-    data_out[pos]=tintbin();
-
 }
 
 void Channel::UpdateDIP(bin_t pos)
@@ -1461,6 +1447,17 @@ void    Channel::OnAck (struct evbuffer *evb) {
         if (di!=data_out_.size()) {
             UpdateRTT(di, data_out_, peer_owd);
             dprintf("%s #%" PRIu32 " setting null %s\n",tintstr(),id_, data_out_[di].bin.str().c_str());
+            // early loss detection by packet reordering
+            for (int re=0; re<di-MAX_REORDERING; re++) {
+               if (data_out_[re]==tintbin())
+                   continue;
+               ack_not_rcvd_recent_++;
+               data_out_size_--;
+               data_out_tmo_.push_back(data_out_[re].bin);
+               dprintf("%s #%" PRIu32 " Rdata %s\n",tintstr(),id_,data_out_.front().bin.str().c_str());
+               data_out_cap_ = bin_t::ALL;
+               data_out_[re] = tintbin();
+            }
             data_out_[di]=tintbin();
         }
         else if (ri!=data_out_tmo_.size()) {
