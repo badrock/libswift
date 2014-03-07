@@ -1369,6 +1369,7 @@ void Channel::UpdateRTT(int32_t pos, tbqueue data_out, tint owd) {
        if (data_out[re]==tintbin())
            continue;
        ack_not_rcvd_recent_++;
+       data_out_size_--;
        data_out_tmo_.push_back(data_out[re].bin);
        dprintf("%s #%" PRIu32 " Rdata %s\n",tintstr(),id_,data_out.front().bin.str().c_str());
        data_out_cap_ = bin_t::ALL;
