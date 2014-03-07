@@ -469,6 +469,7 @@ void    Channel::Send () {
 
     // Ledbat log
     // Time - PingPong - SlowStart - CC - KeepAlive - Close - CCwindow - Loss
+    if (id_==1)
     switch (send_control_) {
         case KEEP_ALIVE_CONTROL:
             lprintf("%lu \t %d \t %d \t %d \t %li \t %d \t %d \t %d \t %li \t %li\n", NOW-open_time_, 0, 0, 0, NOW-last_send_time_, 0, 0, 0, dip_avg_, hint_out_size_);
