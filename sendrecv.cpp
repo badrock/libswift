@@ -1207,7 +1207,7 @@ bin_t    Channel::DequeueHintOut(uint64_t size) {
 	// TODO check... the seconds should depend on previous speed of the peer
 	while (hint_queue_out_.size() && hint_queue_out_.front().time<NOW-TINT_SEC*HINT_TIME*3/2) { // FIXME sec
 		hint_queue_out_size_ -= hint_queue_out_.front().bin.base_length();
-		dprintf("%s #%" PRIu32 " Removing queued hint:%" PRIu64 "/n",tintstr(),id_, hint_queue_out_.front().bin.str().c_str());
+		dprintf("%s #%" PRIu32 " Removing queued hint:%s\n",tintstr(),id_, hint_queue_out_.front().bin.str().c_str());
 		hint_queue_out_.pop_front();
 	}
 
