@@ -571,8 +571,8 @@ void    Channel::AddHint (struct evbuffer *evb) {
         return;
 
     // 1. Calc max of what we are allowed to request, uncongested bandwidth wise
-    tint plan_for = max(TINT_SEC*HINT_TIME,rtt_avg_*4);
-    tint timed_out = NOW - plan_for*2;
+    tint plan_for = max(TINT_SEC*HINT_TIME,rtt_avg_<<2);
+    tint timed_out = NOW - plan_for<<1;
 
     std::deque<bin_t> tbc;
     while ( !hint_out_.empty() && hint_out_.front().time < timed_out ) {
@@ -1170,7 +1170,7 @@ void    Channel::CleanHintOut (bin_t pos) {
     if (hi==hint_out_.size())
         return; // something not hinted or hinted in far past
     while (hi--) { // removing likely snubbed hints
-            bin_t hint = hint_out_.front().bin;
+        bin_t hint = hint_out_.front().bin;
         hint_out_size_ -= hint.base_length();
         hint_out_.pop_front();
 #if ENABLE_CANCEL == 1
@@ -1207,12 +1207,13 @@ bin_t    Channel::DequeueHintOut(uint64_t size) {
 	// TODO check... the seconds should depend on previous speed of the peer
 	while (hint_queue_out_.size() && hint_queue_out_.front().time<NOW-TINT_SEC*HINT_TIME*3/2) { // FIXME sec
 		hint_queue_out_size_ -= hint_queue_out_.front().bin.base_length();
+		dprintf("%s #%" PRIu32 " Removing queued hint:%" PRIu64 "/n",tintstr(),id_, hint_queue_out_.front().bin.str().c_str());
 		hint_queue_out_.pop_front();
 	}
 
 	if (!hint_queue_out_size_){
 	    if (DEBUGTRAFFIC)
-	            fprintf(stderr, " ..refill\n");
+            fprintf(stderr, " ..refill\n");
 		return bin_t::NONE;
 	}
 
@@ -1227,7 +1228,7 @@ bin_t    Channel::DequeueHintOut(uint64_t size) {
 	hint_queue_out_.pop_front();
 	hint_queue_out_size_ -= res.base_length();
 	if (DEBUGTRAFFIC)
-	        fprintf(stderr, " sending %s [%llu]\n",res.str().c_str(),res.base_length());
+        fprintf(stderr, " sending %s [%llu]\n",res.str().c_str(),res.base_length());
 	return res;
 
 }
