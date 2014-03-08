@@ -1173,6 +1173,7 @@ void    Channel::CleanHintOut (bin_t pos) {
         bin_t hint = hint_out_.front().bin;
         hint_out_size_ -= hint.base_length();
         hint_out_.pop_front();
+        dprintf("%s #%" PRIu32 " Clean outstanding hint %s\n",tintstr(),id_,hint.str().c_str());
 #if ENABLE_CANCEL == 1
         // Ric: add to the cancel queue
         cancel_out_.push_back(hint);
@@ -1384,10 +1385,10 @@ void Channel::UpdateDIP(bin_t pos)
      * Ric: we need to prevent also against burst in the network link.
      * It also happens that RTT is too small
      */
-    if (rtt_hint_tintbin_.bin == pos) {
+    if (rtt_hint_tintbin_.bin == pos && IsComplete()) {
         tint diff = NOW - rtt_hint_tintbin_.time;
         // Conservative: only adjust rtt_avg_ if 2x smaller
-        if (diff < rtt_avg_/2 && IsComplete())
+        if (diff < rtt_avg_>>1)
         {
             dprintf("%s #%" PRIu32 " rtt adjust %" PRIi64 " -> %" PRIi64 "\n",tintstr(),id_,rtt_avg_,diff);
             rtt_avg_ = diff;
