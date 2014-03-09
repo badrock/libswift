@@ -1493,6 +1493,8 @@ void Channel::TimeoutDataOut ( ) {
     tint timeout = NOW - ack_timeout();
     if (send_control_!=LEDBAT_CONTROL)
         timeout *= 2;
+    dprintf("%s #%" PRIu32 " timeout %" PRIi64 "\n",tintstr(),id_,timeout);
+
     while (!data_out_.empty() &&
         ( data_out_.front().time<timeout || data_out_.front()==tintbin() ) ) {
         if (data_out_.front()!=tintbin() && ack_in_.is_empty(data_out_.front().bin)) {
