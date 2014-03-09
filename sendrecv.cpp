@@ -1169,6 +1169,8 @@ void    Channel::CleanHintOut (bin_t pos) {
         hi++;
     if (hi==hint_out_.size())
         return; // something not hinted or hinted in far past
+
+    // Ric: allow reordering of arriving pkts
     while (hi--) { // removing likely snubbed hints
         bin_t hint = hint_out_.front().bin;
         hint_out_size_ -= hint.base_length();
@@ -1450,6 +1452,7 @@ void    Channel::OnAck (struct evbuffer *evb) {
             UpdateRTT(di, data_out_, peer_owd);
             dprintf("%s #%" PRIu32 " setting null %s\n",tintstr(),id_, data_out_[di].bin.str().c_str());
             // early loss detection by packet reordering
+            /* TODO do we really need it?
             for (int re=0; re<di-MAX_REORDERING; re++) {
                if (data_out_[re]==tintbin())
                    continue;
@@ -1459,7 +1462,7 @@ void    Channel::OnAck (struct evbuffer *evb) {
                dprintf("%s #%" PRIu32 " Rdata %s\n",tintstr(),id_,data_out_.front().bin.str().c_str());
                data_out_cap_ = bin_t::ALL;
                data_out_[re] = tintbin();
-            }
+            }*/
             data_out_[di]=tintbin();
         }
         else if (ri!=data_out_tmo_.size()) {
@@ -1470,8 +1473,8 @@ void    Channel::OnAck (struct evbuffer *evb) {
     }
 
     // clear zeroed items
-    /* TODO: do we really need it?
-    while (!data_out_.empty() && ( data_out_.front()==tintbin() ||
+    // TODO: do we really need it?
+    /*while (!data_out_.empty() && ( data_out_.front()==tintbin() ||
             ack_in_.is_filled(data_out_.front().bin) ) ) {
         dprintf("%s #%" PRIu32 " removing %s\n",tintstr(),id_, data_out_.front().bin.str().c_str());
         data_out_.pop_front();
@@ -1498,7 +1501,7 @@ void Channel::TimeoutDataOut ( ) {
         data_out_.pop_front();
     }
     // clear retransmit queue of older items
-    while (!data_out_tmo_.empty() && data_out_tmo_.front().time<NOW-MAX_POSSIBLE_RTT)
+    while (!data_out_tmo_.empty() && (data_out_tmo_.front()==tintbin() || data_out_tmo_.front().time<NOW-MAX_POSSIBLE_RTT))
         data_out_tmo_.pop_front();
 
     // use the same value to clean the delay samples
