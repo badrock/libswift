@@ -333,7 +333,7 @@ bin_t        Channel::DequeueHint (bool *retransmitptr) {
         }
     }
     
-    dprintf("%s #%" PRIu32 " dequeue empty %d\n",tintstr(),id_, (int)hint_in_.empty() );
+    //dprintf("%s #%" PRIu32 " dequeue empty %d\n",tintstr(),id_, (int)hint_in_.empty() );
 
     while (!hint_in_.empty() && send.is_none()) {
         bin_t hint = hint_in_.front().bin;
@@ -1493,7 +1493,7 @@ void Channel::TimeoutDataOut ( ) {
     tint timeout = NOW - ack_timeout();
     if (send_control_!=LEDBAT_CONTROL)
         timeout *= 2;
-    dprintf("%s #%" PRIu32 " timeout %" PRIi64 "\n",tintstr(),id_,timeout);
+    dprintf("%s #%" PRIu32 " ack timeout %" PRIi64 "\n",tintstr(),id_,ack_timeout());
 
     while (!data_out_.empty() &&
         ( data_out_.front().time<timeout || data_out_.front()==tintbin() ) ) {
