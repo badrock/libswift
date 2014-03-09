@@ -1492,7 +1492,7 @@ void Channel::TimeoutDataOut ( ) {
     // Ric: aggressively timeout only if in active transmission (using cc like LEDBAT)
     tint timeout = NOW - ack_timeout();
     if (send_control_!=LEDBAT_CONTROL)
-        timeout *= 2;
+        timeout = timeout * 4;
     dprintf("%s #%" PRIu32 " ack timeout %" PRIi64 "\n",tintstr(),id_,ack_timeout());
 
     while (!data_out_.empty() &&
