@@ -535,16 +535,18 @@ void    Channel::Send () {
     if (evbuffer_get_length(evb)==4) {// only the channel id; bare keep-alive
         data = bin_t::ALL;
     }
-    dprintf("%s #%" PRIu32 " sent %ib %s:%x\n",
-            tintstr(),id_,(int)evbuffer_get_length(evb),peer().str().c_str(),
-            pcid);
 
+    last_send_time_ = NOW;
     int r = SendTo(socket_,peer(),evb);
     if (r==-1)
         print_error("swift can't send datagram");
     else
         raw_bytes_up_ += r;
-    last_send_time_ = NOW;
+
+    dprintf("%s #%" PRIu32 " sent %ib %s:%x\n",
+                tintstr(),id_,(int)evbuffer_get_length(evb),peer().str().c_str(),
+                pcid);
+
     sent_since_recv_++;
     dgrams_sent_++;
     evbuffer_free(evb);
