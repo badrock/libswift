@@ -837,11 +837,13 @@ bin_t        Channel::AddData (struct evbuffer *evb) {
     }
 
     last_data_out_time_ = NOW;
-    timer_delay_ = last_data_out_time_-next_send_time_;
     data_out_.push_back(tosend);
     data_out_size_++;
     bytes_up_ += r;
     global_bytes_up += r;
+
+    timer_delay_ = last_data_out_time_-next_send_time_-reschedule_delay_;
+    reschedule_delay_ = 0;
 
     dprintf("%s #%" PRIu32 " +data %s\n",tintstr(),id_,tosend.str().c_str());
     dprintf("%s #%" PRIu32 " timer delay :%" PRIi64 "\n",tintstr(),id_,timer_delay_);
@@ -2367,6 +2369,7 @@ void Channel::Reschedule () {
         if (next_send_time_<NOW && send_control_ == LEDBAT_CONTROL) {
             dprintf("%s #%" PRIu32 " Already something scheduled for: %s\n",tintstr(),id_, tintstr(next_send_time_));
             direct_sending_ = true;
+            reschedule_delay_ = NOW-next_send_time_;
         }
         evtimer_del(evsend_ptr_);
     }
