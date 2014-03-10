@@ -837,6 +837,7 @@ bin_t        Channel::AddData (struct evbuffer *evb) {
     }
 
     last_data_out_time_ = NOW;
+    timer_delay_ = last_data_out_time_-next_send_time_;
     data_out_.push_back(tosend);
     data_out_size_++;
     bytes_up_ += r;
@@ -2365,10 +2366,7 @@ void Channel::Reschedule () {
         if (next_send_time_<NOW && send_control_ == LEDBAT_CONTROL) {
             dprintf("%s #%" PRIu32 " Already something scheduled for: %s\n",tintstr(),id_, tintstr(next_send_time_));
             direct_sending_ = true;
-            timer_delay_ = NOW-next_send_time_;
         }
-        else
-            timer_delay_ = 0;
         evtimer_del(evsend_ptr_);
     }
 
