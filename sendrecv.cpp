@@ -466,7 +466,6 @@ void    Channel::AddHandshake (struct evbuffer *evb)
 void    Channel::Send () {
 
     dprintf("%s #%" PRIu32 " Send called \n",tintstr(),id_);
-    timer_delay_ = NOW-next_send_time_;
 
     // Ledbat log
     // Time - PingPong - SlowStart - CC - KeepAlive - Close - CCwindow - Loss
@@ -2366,7 +2365,10 @@ void Channel::Reschedule () {
         if (next_send_time_<NOW && send_control_ == LEDBAT_CONTROL) {
             dprintf("%s #%" PRIu32 " Already something scheduled for: %s\n",tintstr(),id_, tintstr(next_send_time_));
             direct_sending_ = true;
+            timer_delay_ = NOW-next_send_time_;
         }
+        else
+            timer_delay_ = 0;
         evtimer_del(evsend_ptr_);
     }
 
