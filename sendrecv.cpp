@@ -466,6 +466,7 @@ void    Channel::AddHandshake (struct evbuffer *evb)
 void    Channel::Send () {
 
     dprintf("%s #%" PRIu32 " Send called \n",tintstr(),id_);
+    timer_delay_ = NOW-next_send_time_;
 
     // Ledbat log
     // Time - PingPong - SlowStart - CC - KeepAlive - Close - CCwindow - Loss
@@ -536,16 +537,16 @@ void    Channel::Send () {
         data = bin_t::ALL;
     }
 
+    dprintf("%s #%" PRIu32 " sent %ib %s:%x\n",
+                tintstr(),id_,(int)evbuffer_get_length(evb),peer().str().c_str(),
+                pcid);
     last_send_time_ = NOW;
+
     int r = SendTo(socket_,peer(),evb);
     if (r==-1)
         print_error("swift can't send datagram");
     else
         raw_bytes_up_ += r;
-
-    dprintf("%s #%" PRIu32 " sent %ib %s:%x\n",
-                tintstr(),id_,(int)evbuffer_get_length(evb),peer().str().c_str(),
-                pcid);
 
     sent_since_recv_++;
     dgrams_sent_++;
@@ -2366,11 +2367,7 @@ void Channel::Reschedule () {
         if (next_send_time_<NOW && send_control_ == LEDBAT_CONTROL) {
             dprintf("%s #%" PRIu32 " Already something scheduled for: %s\n",tintstr(),id_, tintstr(next_send_time_));
             direct_sending_ = true;
-            timer_delay_ = NOW-next_send_time_;
         }
-        else
-            timer_delay_ = 0;
-
         evtimer_del(evsend_ptr_);
     }
 
