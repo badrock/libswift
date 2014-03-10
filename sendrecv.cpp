@@ -842,7 +842,7 @@ bin_t        Channel::AddData (struct evbuffer *evb) {
     bytes_up_ += r;
     global_bytes_up += r;
 
-    timer_delay_ = last_data_out_time_-next_send_time_-reschedule_delay_;
+    timer_delay_ = last_data_out_time_-next_send_time_+reschedule_delay_;
     reschedule_delay_ = 0;
 
     dprintf("%s #%" PRIu32 " +data %s\n",tintstr(),id_,tosend.str().c_str());
