@@ -168,7 +168,8 @@ tint    Channel::CwndRateNextSendTime () {
     if (data_out_size_<cwnd_) {
         dprintf("%s #%" PRIu32 " sendctrl send interval %" PRIi64 "us (cwnd %.2f, data_out %" PRIu32 ")\n",
                 tintstr(),id_,send_interval_,cwnd_,data_out_size_);
-        return last_data_out_time_ + send_interval_ - timer_delay_;
+        //return last_data_out_time_ + send_interval_ - timer_delay_;
+        return next_send_time_ + send_interval_;
     } else {
         dprintf("%s #%" PRIu32 " sendctrl avoid sending (cwnd %.2f, data_out %" PRIu32 ")\n",
                 tintstr(),id_,cwnd_,data_out_size_);
