@@ -1495,7 +1495,6 @@ void Channel::TimeoutDataOut ( ) {
     tint timeout = NOW - ack_timeout();
     if (send_control_!=LEDBAT_CONTROL)
         timeout -= ack_timeout()<<1;
-    dprintf("%s #%" PRIu32 " ack timeout %" PRIi64 "\n",tintstr(),id_,ack_timeout());
 
     while (!data_out_.empty() &&
         ( data_out_.front().time<timeout || data_out_.front()==tintbin() ) ) {
@@ -2363,11 +2362,15 @@ void Channel::Reschedule () {
 
     struct timeval currtv;
     if (evtimer_pending(evsend_ptr_, &currtv)) {
-        //if (timercmp(&currtv, tint2tv(NOW), <)) {
-        if (next_send_time_<NOW && send_control_ != PING_PONG_CONTROL) {
+
+        if (next_send_time_<NOW && send_control_ == LEDBAT_CONTROL) {
             dprintf("%s #%" PRIu32 " Already something scheduled for: %s\n",tintstr(),id_, tintstr(next_send_time_));
             direct_sending_ = true;
+            timer_delay_ = NOW-next_send_time_;
         }
+        else
+            timer_delay_ = 0;
+
         evtimer_del(evsend_ptr_);
     }
 
