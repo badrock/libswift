@@ -844,6 +844,7 @@ bin_t        Channel::AddData (struct evbuffer *evb) {
     global_bytes_up += r;
 
     dprintf("%s #%" PRIu32 " +data %s\n",tintstr(),id_,tosend.str().c_str());
+    dprintf("%s #%" PRIu32 " timer delay :%" PRIi64 "\n",tintstr(),id_,timer_delay_);
 
     // RATELIMIT
     // ARNOSMPTODO: count overhead bytes too? Move to Send() then.
