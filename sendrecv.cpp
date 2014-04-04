@@ -1512,7 +1512,7 @@ void Channel::TimeoutDataOut ( ) {
     // clear retransmit queue of older items
     while (!data_out_tmo_.empty() && (data_out_tmo_.front()==tintbin() || data_out_tmo_.front().time<NOW-MAX_POSSIBLE_RTT)) {
         data_out_tmo_.pop_front();
-        data_out_size_--;
+        //data_out_size_--;
     }
 
     // use the same value to clean the delay samples
