@@ -845,7 +845,7 @@ bin_t        Channel::AddData (struct evbuffer *evb) {
     global_bytes_up += r;
 
     timer_delay_ = last_data_out_time_-next_send_time_+reschedule_delay_;
-    reschedule_delay_ = 0;
+    //reschedule_delay_ = 0;
 
     dprintf("%s #%" PRIu32 " +data %s\n",tintstr(),id_,tosend.str().c_str());
     dprintf("%s #%" PRIu32 " timer delay :%" PRIi64 "\n",tintstr(),id_,timer_delay_);
@@ -2392,6 +2392,12 @@ void Channel::Reschedule () {
             dprintf("%s #%" PRIu32 " requeue direct send (%s)\n",tintstr(),id_, duein<=0 ? "duein" : "direct sending");
             next_send_time_ = NOW;
             direct_sending_ = false;
+
+            if (reschedule_delay_ - send_interval_)
+                reschedule_delay_ -= send_interval_;
+            else
+                reschedule_delay_ = 0;
+
             LibeventSendCallback(-1,EV_TIMEOUT,this);
         }
         else
