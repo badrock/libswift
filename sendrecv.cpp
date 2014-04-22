@@ -2371,8 +2371,10 @@ void Channel::Reschedule () {
 
         if (next_send_time_<NOW && send_control_ == LEDBAT_CONTROL) {
             dprintf("%s #%" PRIu32 " Already something scheduled for: %s\n",tintstr(),id_, tintstr(next_send_time_));
-            direct_sending_ = true;
-            reschedule_delay_ = NOW-next_send_time_;
+
+            tint delay = NOW-next_send_time_;
+            reschedule_delay_ += delay;
+
             dprintf("%s #%" PRIu32 " reschedule delay :%" PRIi64 "\n",tintstr(),id_,reschedule_delay_);
         }
         evtimer_del(evsend_ptr_);
@@ -2383,7 +2385,7 @@ void Channel::Reschedule () {
 
         assert(next_send_time_<NOW+TINT_MIN);
         tint duein = next_send_time_-NOW;
-        if (duein <= 0 || direct_sending_) {
+        if (duein <= 0) {
             // Arno, 2011-10-18: libevent's timer implementation appears to be
             // really slow, i.e., timers set for 100 usec from now get called
             // at least two times later :-( Hence, for sends after receives
@@ -2391,12 +2393,8 @@ void Channel::Reschedule () {
             // Ric: TODO add comment on direct sending!
             dprintf("%s #%" PRIu32 " requeue direct send (%s)\n",tintstr(),id_, duein<=0 ? "duein" : "direct sending");
             next_send_time_ = NOW;
-            direct_sending_ = false;
 
-            if (reschedule_delay_ - send_interval_)
-                reschedule_delay_ -= send_interval_;
-            else
-                reschedule_delay_ = 0;
+            reschedule_delay_ -= duein;
 
             LibeventSendCallback(-1,EV_TIMEOUT,this);
         }
