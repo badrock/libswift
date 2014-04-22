@@ -2394,7 +2394,8 @@ void Channel::Reschedule () {
             dprintf("%s #%" PRIu32 " requeue direct send (%s)\n",tintstr(),id_, duein<=0 ? "duein" : "direct sending");
             next_send_time_ = NOW;
 
-            reschedule_delay_ -= duein;
+            if (send_control_ == LEDBAT_CONTROL)
+                reschedule_delay_ -= duein;
 
             LibeventSendCallback(-1,EV_TIMEOUT,this);
         }
