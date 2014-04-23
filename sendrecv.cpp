@@ -2373,7 +2373,7 @@ void Channel::Reschedule () {
     // triggered by something received.
     if (last_send_time_>next_send_time_ && next_send_time_<NOW && send_control_ == LEDBAT_CONTROL) {
         dprintf("%s #%" PRIu32 " Already something scheduled for: %s\n",tintstr(),id_, tintstr(next_send_time_));
-        reschedule_delay_ = next_send_time_-NOW;
+        reschedule_delay_ = NOW - next_send_time_;
         dprintf("%s #%" PRIu32 " reschedule delay :%" PRIi64 "\n",tintstr(),id_,reschedule_delay_);
     }
 
