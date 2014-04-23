@@ -1082,8 +1082,6 @@ namespace swift {
         Address     recv_peer_;
 
         // keep memory of previous delays
-        tint        prev_timer_;
-        tint        timer_delay_;
         tint        reschedule_delay_;
 
         // PPSP

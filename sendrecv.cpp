@@ -771,7 +771,7 @@ bin_t        Channel::AddData (struct evbuffer *evb) {
     tint luft = send_interval_>>4; // may wake up a bit earlier
     // Ric: test
     //if (data_out_size_<cwnd_ && last_data_out_time_+send_interval_-timer_delay_<=NOW+luft) {
-    if ( (data_out_size_<cwnd_ || cwnd_>0) && last_data_out_time_+send_interval_-timer_delay_<=NOW+luft) {
+    if ( (data_out_size_<cwnd_ || cwnd_>0) && last_data_out_time_+send_interval_-reschedule_delay_<=NOW+luft) {
         tosend = DequeueHint(&isretransmit);
         if (tosend.is_none()) {
             dprintf("%s #%" PRIu32 " sendctrl no idea what data to send\n",tintstr(),id_);
@@ -844,11 +844,7 @@ bin_t        Channel::AddData (struct evbuffer *evb) {
     bytes_up_ += r;
     global_bytes_up += r;
 
-    timer_delay_ = last_data_out_time_-next_send_time_+reschedule_delay_;
-    //reschedule_delay_ = 0;
-
     dprintf("%s #%" PRIu32 " +data %s\n",tintstr(),id_,tosend.str().c_str());
-    dprintf("%s #%" PRIu32 " timer delay :%" PRIi64 "\n",tintstr(),id_,timer_delay_);
 
     // RATELIMIT
     // ARNOSMPTODO: count overhead bytes too? Move to Send() then.
@@ -2362,9 +2358,9 @@ void Channel::Reschedule () {
         return;
     }
     struct timeval currtv;
-    if (evtimer_pending(evsend_ptr_, &currtv)) {
-        evtimer_del(evsend_ptr_);
-    }
+    //if (evtimer_pending(evsend_ptr_, &currtv)) {
+    //    evtimer_del(evsend_ptr_);
+    //}
 
     dprintf("%s schedule\n",tintstr() );
 
