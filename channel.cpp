@@ -70,7 +70,7 @@ Channel::Channel(ContentTransfer* transfer, int socket, Address peer_addr) :
     raw_bytes_up_(0), raw_bytes_down_(0), bytes_up_(0), bytes_down_(0),
     old_movingfwd_bytes_(0),
     scheduled4del_(false),
-    timer_delay_(0), reschedule_delay_(0),
+    prev_timer_(0), timer_delay_(0), reschedule_delay_(0),
     hs_out_(NULL), hs_in_(NULL),
     last_sent_munro_(bin_t::NONE),
     munro_ack_rcvd_(false),
